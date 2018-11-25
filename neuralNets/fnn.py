@@ -71,7 +71,7 @@ class FNN:
         inputs: (list or matrix) one row for each input to the network
 
         RETURNS:
-        outputs: (list or matrix) one output correspondong to each input
+        outputs: (list or matrix) output for all layers for all inputs
         """
         inputs = np.asarray(inputs)
         outputs = [inputs]
@@ -87,6 +87,9 @@ class FNN:
         inputs: (list or matrix) one row for each input to the network
         desired_outputs: (list or matrix) one row for desired output for each input
         outputs:  (list or matrix) one row for actual output to each input
+
+        RETURNS:
+        error: Mean square error for given desired outputs and actual outputs
         """
         # average MSE along each dimension
         error = np.mean((desired_outputs - outputs[-1])**2, 0)
@@ -98,11 +101,11 @@ class FNN:
         delta_l_b = []
         # compute gradients
         for l in reversed(np.arange(1,self.num_layers)):
-            # change in w_l = dE/dnet * dnet/dw = del_l * outputs_l-1
+            # change in weights w_l = dE/dnet * dnet/dw = del_l * outputs_l-1
             # dE/dnet = del_l = dE/dout * dout/dnet
             # Therefore, change in w_l = del_l * dnet/dw = del_l * out_l-1
             d_w = np.transpose(np.matmul(np.transpose(del_l), outputs[l-1]))
-            # change_in_b_l = del_l * ones (since signal coming through bias = 1)
+            # Similarly, change in bias b_l = del_l * ones (since signal coming through bias = 1)
             d_b = np.sum(del_l, 0)
 
             # collecting these changes to apply them later
@@ -138,27 +141,35 @@ class FNN:
         return error
 
 if __name__ == "__main__":
-    nn = FNN([2,3,2,2],activation='tanh')
-    inputs = [[-1,-1],[-1,1],[1,-1],[1,1]]
-    outputs = [[-1,-1],[1,1],[1,1],[1,-1]]
-    errs = []
-    for _ in range(5000):
-        s = np.random.randint(4) # to pick one random input to train on
-        error = nn.training_step(inputs[s], outputs[s])
-        errs.append(error[1])
-        print("ERROR : ", error[1])
-
-    # display results with one final fwd pass
-    print("\n\n###############################################")
-    print("After training")
-    print("Inputs:\n", inputs)
-    print("Desired Outputs:\n", outputs)
-    print("Outputs:\n", nn.forward(inputs)[-1])
-
-    # Plot training curve
     plt.figure()
-    plt.plot(errs)
-    plt.title("Training curve")
-    plt.xlabel("Training steps")
-    plt.ylabel('Error')
+    # 10 separate runs
+    for _ in range(10):
+        nn = FNN([2,3,2,2],activation='tanh')
+        inputs = [[-1,-1],[-1,1],[1,-1],[1,1]]
+        outputs = [[-1,-1],[1,1],[1,1],[1,-1]] # 2 outputs - OR and XOR logic gates
+        errs = []
+        for _ in range(10000):
+            s1 = np.random.randint(4) # to pick one random input to train on
+            s2 = np.random.randint(4) # to pick one random input to train on
+            s3 = np.random.randint(4) # to pick one random input to train on
+            #error = nn.training_step([inputs[s1],inputs[s2]], [outputs[s1],outputs[s2]])
+            error = nn.training_step(inputs, outputs)
+            errs.append(error[1])
+            #print("ERROR : ", error[1])
+
+        # display results with one final fwd pass
+        print("\n\n###############################################")
+        print("After training")
+        print("Inputs:\n", inputs)
+        print("Desired Outputs:\n", outputs)
+        print("Outputs:\n", nn.forward(inputs)[-1])
+
+        # Plot training curve
+        plt.plot(errs, alpha=0.3)
+        plt.title("Training curve for 10 runs where \ngradient is computed on all (4) inputs at a time")
+        plt.xlabel("Training steps")
+        plt.ylabel('Error')
+
+    plt.tight_layout()
+    #plt.savefig('./and_xor_4_sample_training.png')
     plt.show()
