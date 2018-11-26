@@ -1,3 +1,14 @@
+##################################################################################
+# Feed-forward neural network with gradient descent backprop leanrning
+# Works with any number of hidden layers/neurons and supports the following
+# activation functions
+# 1. sigmoid
+# 2. tanh
+# 3. ReLU
+#
+# Madhavun Candadai
+# Nov 2018
+##################################################################################
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -26,7 +37,7 @@ class FNN:
         self.d_activation_funcs = {
                                 'sigmoid': lambda x:np.asarray(x)*(1-np.asarray(x)),
                                 'tanh': lambda x:1-(np.asarray(x)**2),
-                                'relu': lambda x:1 if x>0 else 0,
+                                'relu': lambda x:np.asarray([1 if i>0 else 0 for i in x]),
                                 }
 
         ## setting activation for each layer
@@ -42,7 +53,9 @@ class FNN:
             self.d_activation = [self.d_activation_funcs[activation]]*(self.num_layers-1)
         else:
             # else activation must be a list of str correspondong to each layer
-            assert len(activation)==self.num_layers-1, "if activation is a list, len(activation) should be equal to len(units_per_layer)-1 (first layer is input) OR activation should be str to assign same activation to all layers"
+            assert len(activation)==self.num_layers-1, ('if activation is a list,'
+                    ' len(activation) should be equal to len(units_per_layer)-1, since first layer is input OR'
+                    ' activation should be str to assign same activation to all layers')
             self.activation = []
             # activation is a list
             for act in activation:
@@ -91,6 +104,14 @@ class FNN:
         RETURNS:
         error: Mean square error for given desired outputs and actual outputs
         """
+        ## NOTES
+        # w_l - weights from layer l-1 to l
+        # b_l - biases to layer l
+        # del_l - derivative of error with respect to net input to layer l = dE/dnet = dE/dout * dout/dnet
+        # d_activation - derivative of activation function - see lines 30-64
+        # delta_l_w - gradient of error with respect to weights = dE/dw
+        # delta_l_b - gradient of error with respect to biases = dE/db
+
         # average MSE along each dimension
         error = np.mean((desired_outputs - outputs[-1])**2, 0)
 
@@ -99,7 +120,8 @@ class FNN:
 
         delta_l_w = []
         delta_l_b = []
-        # compute gradients
+
+        ## Compute gradients
         for l in reversed(np.arange(1,self.num_layers)):
             # change in weights w_l = dE/dnet * dnet/dw = del_l * outputs_l-1
             # dE/dnet = del_l = dE/dout * dout/dnet
@@ -118,7 +140,7 @@ class FNN:
             # This dE/dnet for l-1 = [del_l * w_l-1.T] .* f'(outputs[l-1])
             del_l = np.multiply(np.matmul(del_l, np.transpose(self.weights[l-1])), self.d_activation[l-1](outputs[l-1]))
 
-        # apply gradients
+        ## Apply gradients
         for l in reversed(range(self.num_layers-1)):
             self.weights[l] -= np.multiply(self.learning_rate, np.asarray(delta_l_w[-l-1]))
             self.biases[l] -= np.multiply(self.learning_rate, np.asarray(delta_l_b[-l-1].flatten()))
