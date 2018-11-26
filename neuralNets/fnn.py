@@ -123,21 +123,22 @@ class FNN:
 
         ## Compute gradients
         for l in reversed(np.arange(1,self.num_layers)):
-            # change in weights w_l = dE/dnet * dnet/dw = del_l * outputs_l-1
+            # change in weights = dE/dnet * dnet/dw = del_l * outputs_l-1
             # dE/dnet = del_l = dE/dout * dout/dnet
             # Therefore, change in w_l = del_l * dnet/dw = del_l * out_l-1
             d_w = np.transpose(np.matmul(np.transpose(del_l), outputs[l-1]))
-            # Similarly, change in bias b_l = del_l * ones (since signal coming through bias = 1)
+            # Similarly, change in bias = del_l * ones (since signal coming through bias = 1)
             d_b = np.sum(del_l, 0)
 
             # collecting these changes to apply them later
             delta_l_w.append(d_w)
             delta_l_b.append(d_b)
 
-            # estimating dE/dnet for next layer as follows del_l-1 = dE/dnet for l-1, but that depends on
+            # Next, estimating dE/dnet for next (previous) layer as follows
+            # del_l-1 = dE/dnet for l-1, but that depends on
             # a) weighted del_l from previous layer = del_l * w_l.T (transpose because back-propagating)
-            # b) taking gradient over activation to get to net = f'(o_l-1)
-            # This dE/dnet for l-1 = [del_l * w_l-1.T] .* f'(outputs[l-1])
+            # b) taking gradient over activation to get to net = f'(o_l-1) -> derivative of activation
+            # This dE/dnet for l-1 = [del_l * w_l-1.T] .* f'(outputs[l-1]); * -> matrix mul, .* -> element-wise mul
             del_l = np.multiply(np.matmul(del_l, np.transpose(self.weights[l-1])), self.d_activation[l-1](outputs[l-1]))
 
         ## Apply gradients
