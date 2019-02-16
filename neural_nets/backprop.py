@@ -2,12 +2,13 @@ import os
 import pickle
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from neural_nets.models import FNN
 
-def BackPropNet(FNN):
+class BackPropNet(FNN):
     """ Back-propagation training for FNNs """
-    def __init__(self,  units_per_layer, learning_rate=0.01, activation='sigmoid', cost='MSE', d_cost=None):
+    def __init__(self, units_per_layer, learning_rate=0.01, activation='sigmoid', cost='MSE', d_cost=None):
         """ Create FNN based on specifications
 
         units_per_layer: (list, len>=2) Number of neurons in each layer including input, hidden and output
@@ -19,7 +20,6 @@ def BackPropNet(FNN):
         Note: weights are uniform randomly initialized in [-1/sqrt(d), 1/sqrt(d)] where d is the number of inputs a neuron receives
         """
         super(BackPropNet, self).__init__(units_per_layer, learning_rate, activation, cost, d_cost)
-
 
     def backward(self, inputs, desired_outputs, outputs):
         """ Backward propagation of error through the network
@@ -106,22 +106,25 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # data
-    inputs = [[-1,-1],[-1,1],[1,-1],[1,1]]
-    outputs = [[-1,-1],[1,1],[1,1],[1,-1]] # 2 outputs - OR and XOR logic gates
+    inputs = np.asarray([[-1,-1],[-1,1],[1,-1],[1,1]])
+    outputs = np.asarray([[-1,-1],[1,1],[1,1],[1,-1]]) # 2 outputs - OR and XOR logic gates
 
-    for train_samples_per_epoch in range(len(inputs)):
+    for train_samples_per_epoch in range(1,len(inputs)+1):
+        print("\n\n###############################################")
+        print("Trainining with {} samples per epoch".format(train_samples_per_epoch))
         plt.figure()
         # 10 separate runs
         for _ in range(10):
             nn = BackPropNet([2,3,2,2],activation='tanh')
             errs = []
             for t in range(10000):
-                error = nn.training_step(inputs, outputs)
-                print("Error at step {} = {}".format(t, error[1]))
+                train_inds = np.random.randint(0, high=len(inputs), size=[train_samples_per_epoch])
+                error = nn.training_step(inputs[train_inds], outputs[train_inds])
+                if t % 500 == 0:
+                    print("Error at step {} = {}".format(t, error[1]))
                 errs.append(error[1])
 
             # display results with one final fwd pass
-            print("\n\n###############################################")
             print("After training")
             print("Inputs:\n", inputs)
             print("Desired Outputs:\n", outputs)
@@ -129,7 +132,7 @@ if __name__ == "__main__":
 
             # Plot training curve
             plt.plot(errs, alpha=0.3)
-            plt.title("Training curve for 10 runs where \ngradient is computed on all (4) inputs at a time")
+            plt.title("Training curve for 10 runs where \ngradient is computed on {} inputs at a time".format(train_samples_per_epoch))
             plt.xlabel("Training steps")
             plt.ylabel('Error')
 
@@ -138,5 +141,5 @@ if __name__ == "__main__":
         # save
         if not os.path.exists(args.save_dir):
             os.makedirs(args.save_dir)
-        plt.savefig(os.path.join("and_xor_{}_sample_training.png".fornat(train_samples_per_epoch)))
+        plt.savefig(os.path.join(args.save_dir,"and_xor_{}_sample_training.png".format(train_samples_per_epoch)))
         plt.close()
