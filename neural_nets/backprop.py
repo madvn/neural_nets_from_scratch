@@ -97,7 +97,7 @@ class BackPropNet(FNN):
                 self.learning_rate, np.asarray(delta_l_b[-l - 1].flatten())
             )
 
-        return error, np.sum(error)
+        return error, np.sum(np.dot(error, error))
 
     def training_step(self, inputs, desired_outputs):
         """ One complete forward and backward pass through the network

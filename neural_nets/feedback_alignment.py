@@ -30,7 +30,23 @@ class FeedbackAlignment(FNN):
         )
 
         # initializing feedback netowrk with random weights
-        self.feedback_net = FNN(reversed(units_per_layer), activation=activation)
+        self.feedback_net = FNN(list(reversed(units_per_layer)), activation=activation)
+
+    def single_update(self, input, desired_output):
+        """ one update for one input using feedback network """
+        output = self.forward(input)
+        err = desired_output - output[-1]
+        feedback = self.feedback_net.forward(err)
+
+        outer_deriv = np.reshape(self.d_activation[-1](input), [self.units_per_layer[-1],1])
+        delta_w = np.outer(outer_deriv, feedback[0])
+        self.weights[-1] += self.learning_rate * delta_w
+        self.biases[-1] +=
+        for l in range(0,self.num_layers-2):
+            self.weights[l] += self.learning_rate * np.outer(output[l], feedback[-l-2])
+            self.biases[l] += 
+
+        return err
 
     def training_step(self, inputs, desired_outputs):
         """ One complete forward and backward pass through the network
@@ -41,6 +57,47 @@ class FeedbackAlignment(FNN):
         """
         inputs = np.asarray(inputs)
         desired_outputs = np.asarray(desired_outputs)
+        error = []
 
-        outputs = self.forward(inputs)
-        feedback = self.feedback_net.forward(desired_outputs - outputs)
+        if len(np.shape(inputs)) > 1:
+            for sample, desired_output in zip(inputs, desired_outputs):
+                error.append(self.single_update(sample, desired_output))
+        else:
+            error = [self.single_update(inputs, desired_outputs)]
+
+        return error, np.sum(error)
+
+
+if __name__ == "__main__":
+    import sys
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--save_dir",
+        help="(string) directory to save results in",
+        type=str,
+        default="../results/backprop",
+    )
+    parser.add_argument(
+        "--num_epochs",
+        help="(int) number of training epochs",
+        type=int,
+        default=10000,
+    )
+    args = parser.parse_args()
+
+    # data
+    inputs = np.asarray([[-1, -1], [-1, 1], [1, -1], [1, 1]])
+    outputs = np.asarray(
+        [[-1, -1], [1, 1], [1, 1], [1, -1]]
+    )  # 2 outputs - OR and XOR logic gates
+
+    # craete network for feedback alignment training
+    net = FeedbackAlignment([2, 3, 2, 2], activation="tanh")
+    for e in range(args.num_epochs):
+        _, e = net.training_step(inputs, outputs)
+        print("Error: {}".format(e))
+
+    # final fwd ppass
+    print("Outputs\n", net.forward(inputs)[-1])
