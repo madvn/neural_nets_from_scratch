@@ -41,10 +41,8 @@ class FeedbackAlignment(FNN):
         outer_deriv = np.reshape(self.d_activation[-1](input), [self.units_per_layer[-1],1])
         delta_w = np.outer(outer_deriv, feedback[0])
         self.weights[-1] += self.learning_rate * delta_w
-        self.biases[-1] +=
-        for l in range(0,self.num_layers-2):
+        for l in reversed(range(0,self.num_layers-2)):
             self.weights[l] += self.learning_rate * np.outer(output[l], feedback[-l-2])
-            self.biases[l] += 
 
         return err
 

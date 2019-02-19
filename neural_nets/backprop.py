@@ -63,7 +63,6 @@ class BackPropNet(FNN):
         )
 
         delta_l_w = []
-        delta_l_b = []
 
         ## Compute gradients
         for l in reversed(np.arange(1, self.num_layers)):
@@ -71,12 +70,9 @@ class BackPropNet(FNN):
             # dE/dnet = del_l = dE/dout * dout/dnet
             # Therefore, change in w_l = del_l * dnet/dw = del_l * out_l-1
             d_w = np.transpose(np.matmul(np.transpose(del_l), outputs[l - 1]))
-            # Similarly, change in bias = del_l * ones (since signal coming through bias = 1)
-            d_b = np.sum(del_l, 0)
 
             # collecting these changes to apply them later
             delta_l_w.append(d_w)
-            delta_l_b.append(d_b)
 
             # Next, estimating dE/dnet for next (previous) layer as follows
             # del_l-1 = dE/dnet for l-1, but that depends on
@@ -92,9 +88,6 @@ class BackPropNet(FNN):
         for l in reversed(range(self.num_layers - 1)):
             self.weights[l] -= np.multiply(
                 self.learning_rate, np.asarray(delta_l_w[-l - 1])
-            )
-            self.biases[l] -= np.multiply(
-                self.learning_rate, np.asarray(delta_l_b[-l - 1].flatten())
             )
 
         return error, np.sum(np.dot(error, error))
@@ -128,7 +121,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # data
-    inputs = np.asarray([[-1, -1], [-1, 1], [1, -1], [1, 1]])
+    inputs = np.asarray([[-1, -1, 1], [-1, 1, 1], [1, -1, 1], [1, 1, 1]])
     outputs = np.asarray(
         [[-1, -1], [1, 1], [1, 1], [1, -1]]
     )  # 2 outputs - OR and XOR logic gates
@@ -139,7 +132,7 @@ if __name__ == "__main__":
         plt.figure()
         # 10 separate runs
         for _ in range(10):
-            nn = BackPropNet([2, 3, 2, 2], activation="tanh")
+            nn = BackPropNet([3, 3, 2], activation="tanh")
             errs = []
             for t in range(10000):
                 train_inds = np.random.randint(

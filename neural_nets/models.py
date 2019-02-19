@@ -66,7 +66,6 @@ class FNN:
 
         # assigning intial random weights and biases based on layer size
         self.weights = []
-        self.biases = []
         for l in np.arange(self.num_layers - 1):
             d = -1 / np.sqrt(self.units_per_layer[l] + 1)
             self.weights.append(
@@ -75,9 +74,6 @@ class FNN:
                     high=d,
                     size=[self.units_per_layer[l], self.units_per_layer[l + 1]],
                 )
-            )
-            self.biases.append(
-                np.random.uniform(low=-d, high=d, size=[self.units_per_layer[l + 1]])
             )
 
     def _init_activations(self, activation):
@@ -156,7 +152,7 @@ class FNN:
                 outputs[-1] = [outputs[-1]]
             outputs.append(
                 self.activation[l](
-                    np.matmul(outputs[-1], self.weights[l]) + self.biases[l]
+                    np.matmul(outputs[-1], self.weights[l])
                 )
             )
         return outputs
