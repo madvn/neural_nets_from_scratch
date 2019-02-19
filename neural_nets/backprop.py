@@ -13,24 +13,64 @@ class BackPropNet(FNN):
     def __init__(
         self,
         units_per_layer,
-        learning_rate=0.01,
         activation="sigmoid",
+        learning_rate=0.01,
         cost="MSE",
         d_cost=None,
     ):
         """ Create FNN for training with backprop based on specifications
 
         units_per_layer: (list, len>=2) Number of neurons in each layer including input, hidden and output
-        learning_rate: (float) learning_rate to update the weights and biases of the networks
         activation: (str or list of strs ,len=len(units_per_layer)) Activation for each layer, choose from ['sigmoid', 'tanh', 'relu'], default = sigmoid
+        learning_rate: (float) learning_rate to update the weights and biases of the networks
         cost: (str or lambda) Choose the cost function to use, currently only 'MSE'. Alternatively provide lambda that takes two args, desired_outputs and actual_outputs in that order
         d_cost: (lambda) If cost is a lambda, provide another lambda that also takes same two args to estimate the derivative of cost function with respect to output
 
         Note: weights are uniform randomly initialized in [-1/sqrt(d), 1/sqrt(d)] where d is the number of inputs a neuron receives
         """
         super(BackPropNet, self).__init__(
-            units_per_layer, learning_rate, activation, cost, d_cost
+            units_per_layer, activation,
         )
+        self.learning_rate = learning_rate
+
+        # lambdas for cost functions - lambda takes desired outputs d, and outputs o
+        self.cost_funcs = {
+            "MSE": lambda d, o: np.mean(0.5 * (np.asarray(d) - np.asarray(o)) ** 2, 0)
+        }
+
+        # lambdas for derivatives of cost functions
+        self.d_cost_funcs = {"MSE": lambda d, o: -(d - o)}
+
+        # set cost function
+        self._init_cost(cost, d_cost)
+
+
+    def _init_cost(self, cost, d_cost):
+        """ Internal function to set cost and derivative of cost for the network """
+        # check implementation for cost already exists
+        if cost not in self.cost_funcs.keys():
+            # check if a valid cost and d_cost has been provided
+            throw_away_lambda = lambda: 0
+            if (
+                isinstance(cost, type(throw_away_lambda))
+                and cost.__name__ == throw_away_lambda.__name__
+            ) and (
+                isinstance(d_cost, type(throw_away_lambda))
+                and d_cost.__name__ == throw_away_lambda.__name__
+            ):
+                self.cost = cost
+                self.d_cost = d_cost
+            else:
+                # no valid cost function has been defined
+                raise ValueError(
+                    "Choose cost function from {} or provide lambdas for cost and d_cost of __init__".format(
+                        self.cost_funcs.keys()
+                    )
+                )
+        else:
+            # implementation exists for provided cost function
+            self.cost = self.cost_funcs[cost]
+            self.d_cost = self.d_cost_funcs[cost]
 
     def backward(self, inputs, desired_outputs, outputs):
         """ Backward propagation of error through the network
@@ -132,7 +172,7 @@ if __name__ == "__main__":
         plt.figure()
         # 10 separate runs
         for _ in range(10):
-            nn = BackPropNet([3, 3, 2], activation="tanh")
+            nn = BackPropNet([3, 5, 2], activation="tanh")
             errs = []
             for t in range(10000):
                 train_inds = np.random.randint(
