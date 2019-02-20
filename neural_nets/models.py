@@ -14,15 +14,11 @@ import matplotlib.pyplot as plt
 
 
 class FNN:
-    def __init__(
-        self,
-        units_per_layer,
-        activation="sigmoid",
-    ):
+    def __init__(self, units_per_layer, activation="sigmoid"):
         """ Create FNN based on specifications
 
         units_per_layer: (list, len>=2) Number of neurons in each layer including input, hidden and output
-        activation: (str or list of strs ,len=len(units_per_layer)) Activation for each layer, choose from ['sigmoid', 'tanh', 'relu'], default = sigmoid
+        activation: (str or list of strs ,len=len(units_per_layer)) Activation for each layer, choose from ['sigmoid', 'tanh', 'relu', 'linear'], default = sigmoid
 
         Note: weights are uniform randomly initialized in [-1/sqrt(d), 1/sqrt(d)] where d is the number of inputs a neuron receives
         """
@@ -37,12 +33,14 @@ class FNN:
             "sigmoid": lambda x: 1 / (1 + np.exp(-x)),
             "tanh": lambda x: 2 / (1 + np.exp(-2 * x)) - 1,
             "relu": lambda x: np.maximum(0, x),
+            "linear": lambda x: x,
         }
         # lambdas for derivatives of supported activation functions
         self.d_activation_funcs = {
             "sigmoid": lambda x: np.asarray(x) * (1 - np.asarray(x)),
             "tanh": lambda x: 1 - (np.asarray(x) ** 2),
             "relu": lambda x: np.asarray([1 if i > 0 else 0 for i in x]),
+            "linear": lambda x: 1,
         }
         # setting activation for each layer
         self._init_activations(activation)
@@ -93,7 +91,7 @@ class FNN:
                 self.d_activation.append(self.d_activation_funcs[act])
 
     def forward(self, inputs):
-        """ Forward propogate the given inputs through the network
+        """ Forward propagate the given inputs through the network
 
         ARGS
         inputs: (list or matrix) one row for each input to the network
@@ -106,9 +104,5 @@ class FNN:
         for l in np.arange(self.num_layers - 1):
             if outputs[-1].ndim == 1:
                 outputs[-1] = [outputs[-1]]
-            outputs.append(
-                self.activation[l](
-                    np.matmul(outputs[-1], self.weights[l])
-                )
-            )
+            outputs.append(self.activation[l](np.matmul(outputs[-1], self.weights[l])))
         return outputs

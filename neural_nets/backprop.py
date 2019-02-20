@@ -28,9 +28,7 @@ class BackPropNet(FNN):
 
         Note: weights are uniform randomly initialized in [-1/sqrt(d), 1/sqrt(d)] where d is the number of inputs a neuron receives
         """
-        super(BackPropNet, self).__init__(
-            units_per_layer, activation,
-        )
+        super(BackPropNet, self).__init__(units_per_layer, activation)
         self.learning_rate = learning_rate
 
         # lambdas for cost functions - lambda takes desired outputs d, and outputs o
@@ -43,7 +41,6 @@ class BackPropNet(FNN):
 
         # set cost function
         self._init_cost(cost, d_cost)
-
 
     def _init_cost(self, cost, d_cost):
         """ Internal function to set cost and derivative of cost for the network """
