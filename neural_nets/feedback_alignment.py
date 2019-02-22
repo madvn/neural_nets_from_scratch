@@ -72,7 +72,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "--num_epochs", help="(int) number of training epochs", type=int, default=100000
     )
+    parser.add_argument(
+        "--l_rate",
+        help="(string) learning rate",
+        type=str,
+        default="0.01",
+    )
     args = parser.parse_args()
+    save_dir = args.save_dir
+    num_epochs = args.num_epochs
+    l_rate = float(args.l_rate)
 
     # data
     inputs = np.asarray([[0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
@@ -86,16 +95,16 @@ if __name__ == "__main__":
         print("\nRun # {}".format(r))
         es = []
         # create network for feedback alignment training
-        net = FeedbackAlignment([np.shape(inputs)[1], 10, np.shape(outputs)[1]], activation="sigmoid")
-
-        for e in range(args.num_epochs):
-            _, err = net.training_step(inputs, outputs)
+        fa_net = FeedbackAlignment([np.shape(inputs)[1], 10, 5, np.shape(outputs)[1]], activation="sigmoid", learning_rate=l_rate)
+        #bp_net =
+        for e in range(num_epochs):
+            _, err = fa_net.training_step(inputs, outputs)
             if e%5000 == 0:
                 print("Error in epoch {}: {}".format(e, err))
             es.append(err)
 
         # final fwd ppass
-        print("Outputs\n", net.forward(inputs)[-1])
+        print("Outputs\n", fa_net.forward(inputs)[-1])
 
         # plot
         plt.plot(es)
@@ -104,6 +113,6 @@ if __name__ == "__main__":
     plt.xlabel("Epoch #")
     plt.ylabel("SSE")
     plt.title("Feedback alignment performance in 5 runs")
-    if not os.path.exists(args.save_dir):
-        os.mkdir(args.save_dir)
-    plt.savefig(os.path.join(args.save_dir, "fba_performance.png"))
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
+    plt.savefig(os.path.join(save_dir, "fba_performance.png"))
