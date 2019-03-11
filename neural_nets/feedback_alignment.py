@@ -73,10 +73,7 @@ if __name__ == "__main__":
         "--num_epochs", help="(int) number of training epochs", type=int, default=100000
     )
     parser.add_argument(
-        "--l_rate",
-        help="(string) learning rate",
-        type=str,
-        default="0.01",
+        "--l_rate", help="(string) learning rate", type=str, default="0.01"
     )
     args = parser.parse_args()
     save_dir = args.save_dir
@@ -95,11 +92,15 @@ if __name__ == "__main__":
         print("\nRun # {}".format(r))
         es = []
         # create network for feedback alignment training
-        fa_net = FeedbackAlignment([np.shape(inputs)[1], 10, 5, np.shape(outputs)[1]], activation="sigmoid", learning_rate=l_rate)
-        #bp_net =
+        fa_net = FeedbackAlignment(
+            [np.shape(inputs)[1], 10, 5, np.shape(outputs)[1]],
+            activation="sigmoid",
+            learning_rate=l_rate,
+        )
+        # bp_net =
         for e in range(num_epochs):
             _, err = fa_net.training_step(inputs, outputs)
-            if e%5000 == 0:
+            if e % 5000 == 0:
                 print("Error in epoch {}: {}".format(e, err))
             es.append(err)
 

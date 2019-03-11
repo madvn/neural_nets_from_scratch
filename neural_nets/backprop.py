@@ -14,9 +14,9 @@ class BackPropNet(FNN):
         self,
         units_per_layer,
         activation="sigmoid",
-        learning_rate=0.01,
         cost="MSE",
         d_cost=None,
+        learning_rate=0.01,
     ):
         """ Create FNN for training with backprop based on specifications
 
@@ -31,45 +31,7 @@ class BackPropNet(FNN):
         super(BackPropNet, self).__init__(units_per_layer, activation)
         self.learning_rate = learning_rate
 
-        # lambdas for cost functions - lambda takes desired outputs d, and outputs o
-        self.cost_funcs = {
-            "MSE": lambda d, o: np.mean(0.5 * (np.asarray(d) - np.asarray(o)) ** 2, 0)
-        }
-
-        # lambdas for derivatives of cost functions
-        self.d_cost_funcs = {"MSE": lambda d, o: -(d - o)}
-
-        # set cost function
-        self._init_cost(cost, d_cost)
-
-    def _init_cost(self, cost, d_cost):
-        """ Internal function to set cost and derivative of cost for the network """
-        # check implementation for cost already exists
-        if cost not in self.cost_funcs.keys():
-            # check if a valid cost and d_cost has been provided
-            throw_away_lambda = lambda: 0
-            if (
-                isinstance(cost, type(throw_away_lambda))
-                and cost.__name__ == throw_away_lambda.__name__
-            ) and (
-                isinstance(d_cost, type(throw_away_lambda))
-                and d_cost.__name__ == throw_away_lambda.__name__
-            ):
-                self.cost = cost
-                self.d_cost = d_cost
-            else:
-                # no valid cost function has been defined
-                raise ValueError(
-                    "Choose cost function from {} or provide lambdas for cost and d_cost of __init__".format(
-                        self.cost_funcs.keys()
-                    )
-                )
-        else:
-            # implementation exists for provided cost function
-            self.cost = self.cost_funcs[cost]
-            self.d_cost = self.d_cost_funcs[cost]
-
-    def backward(self, inputs, desired_outputs, outputs):
+    def backward(self, inputs, desired_outputs):
         """ Backward propagation of error through the network
 
         ARGS
@@ -87,6 +49,9 @@ class BackPropNet(FNN):
         # d_activation - derivative of activation function - see lines 30-64
         # delta_l_w - gradient of error with respect to weights = dE/dw
         # delta_l_b - gradient of error with respect to biases = dE/db
+
+        # forward pass to get outputs
+        outputs = self.forward(inputs)
 
         # average MSE along each dimension
         error = self.cost(
@@ -139,8 +104,7 @@ class BackPropNet(FNN):
         inputs = np.asarray(inputs)
         desired_outputs = np.asarray(desired_outputs)
 
-        outputs = self.forward(inputs)
-        error = self.backward(inputs, desired_outputs, outputs)
+        error = self.backward(inputs, desired_outputs)
         return error
 
 
