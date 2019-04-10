@@ -1,6 +1,6 @@
 # Implementations of Neural Network models and training algorithms from scratch [WIP]
 
-## Models and Algos
+### Models and Algos
 - [X] Feedforward network of arbitrary size and activation functions
 
 - [X] Backprop with arbitrary cost function
@@ -13,6 +13,8 @@
 
 - [ ] RNN traninng with feedback alignment [2]
 
+### Dependencies
+Numpy and Matplotlib - planning to use [JAX](https://github.com/google/jax) for some of the grad operations.
 
 ### References
 [1] Lillicrap, Timothy P., et al. Random synaptic feedback weights support error backpropagation for deep learning. Nature communications 7 (2016): 13276
