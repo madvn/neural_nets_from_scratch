@@ -1,4 +1,4 @@
-# neuralNets
+# neuralNets [WIP]
 Implementation of generic backprop from scratch
 
 
