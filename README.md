@@ -1,6 +1,4 @@
-# neuralNets [WIP]
-Implementation of generic backprop from scratch
-
+# Implementations of Neural Network models and training algorithms from scratch [WIP]
 
 ## Feed-forward neural network (FNN - neuralNets/fnn.py/FNN)
 
