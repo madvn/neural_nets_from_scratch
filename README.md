@@ -1,6 +1,25 @@
 # Implementations of Neural Network models and training algorithms from scratch [WIP]
 
-## Feed-forward neural network (FNN - neuralNets/fnn.py/FNN)
+## Models and Algos
+- [X] Feedforward network of arbitrary size and activation functions
+
+- [X] Backprop with arbitrary cost function
+
+- [X] Feedback alignment based training for FNNs [1]
+
+- [X] Recurrent network with arbitrary size and activtion functions
+
+- [ ] Backprop through time [WIP]
+
+- [ ] RNN traninng with feedback alignment [2]
+
+
+### References
+[1] Lillicrap, Timothy P., et al. Random synaptic feedback weights support error backpropagation for deep learning. Nature communications 7 (2016): 13276
+
+[2] Murray, J. M. (2018). Local online learning in recurrent networks with random feedback. BioRxiv, 458570.
+
+<!-- ## Feed-forward neural network (FNN - neuralNets/fnn.py/FNN)
 
 #### Create object of FNN with __init__ as follows
 
@@ -29,3 +48,5 @@ Call training_step several times with inputs and desired outputs - for example
         for _ in range(10000):
             error = nn.training_step(inputs, outputs)
             errs.append(error[1])
+
+-->
