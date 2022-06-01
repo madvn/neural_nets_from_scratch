@@ -13,6 +13,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def drelu_du(x):
+    """derivative of relu w.r.t. input"""
+    o = np.zeros_like(x)
+    o[x>0] = 1
+    return o
+
+
 class NeuralNet:
     def __init__(self, units_per_layer, activation="sigmoid", cost="MSE", d_cost=None):
         """ Create NeuralNet based on specifications
@@ -40,7 +47,7 @@ class NeuralNet:
         self.d_activation_funcs = {
             "sigmoid": lambda x: np.asarray(x) * (1 - np.asarray(x)),
             "tanh": lambda x: 1 - (np.asarray(x) ** 2),
-            "relu": lambda x: np.asarray([1 if i > 0 else 0 for i in x]),
+            "relu": drelu_du,
             "linear": lambda x: 1,
         }
 
