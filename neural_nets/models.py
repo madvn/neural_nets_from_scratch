@@ -13,10 +13,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def drelu_du(x):
+def drelu_du(u):
     """derivative of relu w.r.t. input"""
-    o = np.zeros_like(x)
-    o[x>0] = 1
+    o = np.zeros_like(u)
+    o[u>0] = 1
     return o
 
 
