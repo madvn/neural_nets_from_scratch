@@ -1,5 +1,18 @@
 # Implementations of Neural Network models and training algorithms from scratch [WIP]
 
+### Install 
+
+```bash
+# Navigate to this repo in the terminal
+pip install -e .
+```
+
+### Usage
+
+```python
+from neural_nets.backprop import BackPropNet
+```
+
 ### Models and Algos
 - [X] Feedforward network of arbitrary size and activation functions
 
