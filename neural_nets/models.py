@@ -56,6 +56,7 @@ class NeuralNet:
 
         # assigning intial random weights and biases based on layer size
         self.weights = []
+        self.biases = []
         for l in np.arange(self.num_layers - 1):
             d = 1 / np.sqrt(self.units_per_layer[l] + 1)
             self.weights.append(
@@ -63,6 +64,13 @@ class NeuralNet:
                     low=-d,
                     high=d,
                     size=[self.units_per_layer[l], self.units_per_layer[l + 1]],
+                )
+            )
+            self.biases.append(
+                np.random.uniform(
+                    low=-d,
+                    high=d,
+                    size=[1,self.units_per_layer[l+1]],
                 )
             )
 
@@ -131,12 +139,38 @@ class NeuralNet:
                 " activation should be str to assign same activation to all layers"
             )
             self.activation = []
+            self.d_activation = []
             # activation is a list
             for act in activation:
                 validate_activation_str(act)
                 self.activation.append(self.activation_funcs[act])
                 self.d_activation.append(self.d_activation_funcs[act])
 
+    def setParams(self,params):
+        self.weights = []
+        start = 0
+        for l in np.arange(self.num_layers-1):
+            end = start + self.units_per_layer[l]*self.units_per_layer[l+1]
+            self.weights.append(params[start:end].reshape(self.units_per_layer[l],self.units_per_layer[l+1]))
+            start = end
+        self.biases = []
+        for l in np.arange(self.num_layers-1):
+            end = start + self.units_per_layer[l+1]
+            self.biases.append(params[start:end].reshape(1,self.units_per_layer[l+1]))
+            start = end
+
+    def getParams(self):
+        params = np.zeros(self.paramsize)
+        start = 0
+        for l in np.arange(self.num_layers-1):
+            end = start + self.units_per_layer[l]*self.units_per_layer[l+1]
+            params[start:end] = self.weights[l].flatten()
+            start = end
+        for l in np.arange(self.num_layers-1):
+            end = start + self.units_per_layer[l+1]
+            params[start:end] = self.biases[l].flatten()
+            start = end
+        return params
 
 class FNN(NeuralNet):
     def __init__(self, units_per_layer, activation="sigmoid", cost="MSE", d_cost=None):
@@ -156,7 +190,7 @@ class FNN(NeuralNet):
         for l in np.arange(self.num_layers - 1):
             if outputs[-1].ndim == 1:
                 outputs[-1] = [outputs[-1]]
-            outputs.append(self.activation[l](np.matmul(outputs[-1], self.weights[l])))
+            outputs.append(self.activation[l](np.matmul(outputs[-1], self.weights[l]) + self.biases[l]))
         return outputs
 
 
